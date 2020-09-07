@@ -3,7 +3,8 @@ import User from './user.interface';
 
 const addressSchema = new mongoose.Schema({
   city: String,
-  street: String
+  street: String,
+  country: String
 });
 
 const userSchema = new mongoose.Schema({
