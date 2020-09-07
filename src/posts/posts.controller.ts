@@ -1,11 +1,12 @@
 import * as express from 'express';
-import { NextFunction } from 'express';
 import Post from './post.interface';
 import Controller from 'interfaces/controller.interface';
 import postModel from './post.model';
 import PostNotFoundException from '../exceptions/PostNotFoundException';
 import validationMiddleware from '../middleware/validation.middleware';
 import CreatePostDto from './post.dto';
+import authMiddleware from '../middleware/auth.middleware';
+import RequestWithUser from '../interfaces/requestWithUser.interface';
 
 class PostsController implements Controller {
   public path = '/posts';
@@ -19,9 +20,11 @@ class PostsController implements Controller {
   private initializeRoutes() {
     this.router.get(this.path, this.getAllPosts);
     this.router.get(`${this.path}/:id`, this.getPostById);
-    this.router.patch(`${this.path}/:id`, validationMiddleware(CreatePostDto, true), this.modifyPost);
-    this.router.delete(`${this.path}/:id`, this.deletePost);
-    this.router.post(this.path, validationMiddleware(CreatePostDto), this.createPost);
+    this.router
+      .all(`${this.path}/*`, authMiddleware)
+      .patch(`${this.path}/:id`, validationMiddleware(CreatePostDto, true), this.modifyPost)
+      .delete(`${this.path}/:id`, this.deletePost)
+      .post(this.path, authMiddleware, validationMiddleware(CreatePostDto), this.createPost);
   }
 
   private getAllPosts = (request: express.Request, response: express.Response) => {
@@ -31,7 +34,7 @@ class PostsController implements Controller {
       });
   };
 
-  private getPostById = (request: express.Request, response: express.Response, next: NextFunction) => {
+  private getPostById = (request: express.Request, response: express.Response, next: express.NextFunction) => {
     const id = request.params.id;
     this.post.findById(id)
       .then((post) => {
@@ -43,7 +46,7 @@ class PostsController implements Controller {
       });
   };
 
-  private modifyPost = (request: express.Request, response: express.Response, next: NextFunction) => {
+  private modifyPost = (request: express.Request, response: express.Response, next: express.NextFunction) => {
     const id = request.params.id;
     const postData: Post = request.body;
     this.post.findByIdAndUpdate(id, postData, { new: true })
@@ -56,21 +59,22 @@ class PostsController implements Controller {
       });
   };
 
-  private createPost = (request: express.Request, response: express.Response) => {
-    const postData: Post = request.body;
-    const createdPost = new this.post(postData);
-    createdPost.save()
-      .then((savedPost) => {
-        response.send(savedPost);
-      });
+  private createPost = async (request: RequestWithUser, response: express.Response) => {
+    const postData: CreatePostDto = request.body;
+    const createdPost = new this.post({
+      ...postData,
+      authorId: request.user._id
+    });
+    const savedPost = await createdPost.save();
+    response.send(savedPost);
   };
 
-  private deletePost = (request: express.Request, response: express.Response, next: NextFunction) => {
+  private deletePost = (request: express.Request, response: express.Response, next: express.NextFunction) => {
     const id = request.params.id;
     this.post.findByIdAndDelete(id)
       .then((successResponse) => {
         if (successResponse) {
-          response.send(200);
+          response.sendStatus(200);
         } else {
           next(new PostNotFoundException(id));
         }
