@@ -3,19 +3,19 @@ import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
 import Controller from '../interfaces/controller.interface';
 import validationMiddleware from '../middleware/validation.middleware';
-import userModel from '../users/user.model';
 import LogInDto from './login.dto';
 import WrongCredentialsException from '../exceptions/WrongCredentialsException';
 import UserWithThatEmailAlreadyExistsException from '../exceptions/UserWithThatEmailAlreadyExistsException';
 import CreateUserDto from '../users/user.dto';
-import User from '../users/user.interface';
 import TokenData from '../interfaces/tokenData.interface';
 import DataStoredInToken from '../interfaces/dataStoredInToken';
+import { getRepository } from 'typeorm';
+import User from '../users/user.entity';
 
 class AuthenticationController implements Controller {
   public path = '/auth';
   public router = express.Router();
-  private user = userModel;
+  private userRepository = getRepository(User);
 
   constructor() {
     this.initializeRoutes();
@@ -29,14 +29,15 @@ class AuthenticationController implements Controller {
 
   private registration = async (request: express.Request, response: express.Response, next: express.NextFunction) => {
     const userData: CreateUserDto = request.body;
-    if (await this.user.findOne({ email: userData.email })) {
+    if (await this.userRepository.findOne({ email: userData.email })) {
       next(new UserWithThatEmailAlreadyExistsException(userData.email));
     } else {
       const hashedPassword = await bcrypt.hash(userData.password, 10);
-      const user = await this.user.create({
+      const user = this.userRepository.create({
         ...userData,
         password: hashedPassword
       });
+      await this.userRepository.save(user);
       user.password = undefined;
       const tokenData = this.createToken(user);
       response.setHeader('Set-Cookie', [this.createCookie(tokenData)]);
@@ -46,7 +47,7 @@ class AuthenticationController implements Controller {
 
   private loggingIn = async (request: express.Request, response: express.Response, next: express.NextFunction) => {
     const logInData: LogInDto = request.body;
-    const user = await this.user.findOne({ email: logInData.email });
+    const user = await this.userRepository.findOne({ email: logInData.email });
     if (user) {
       const isPasswordMatching = await bcrypt.compare(logInData.password, user.password);
       if (isPasswordMatching) {
@@ -75,7 +76,7 @@ class AuthenticationController implements Controller {
     const expiresIn = 60 * 60; // an hour
     const secret = process.env.JWT_SECRET;
     const dataStoredInToken: DataStoredInToken = {
-      _id: user._id
+      id: user.id
     };
     return {
       expiresIn,

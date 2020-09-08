@@ -1,20 +1,28 @@
 import 'dotenv/config';
+import 'reflect-metadata';
+import { createConnection } from 'typeorm';
 import App from './app';
-import PostsController from './posts/posts.controller';
+import config from './ormconfig';
 import validateEnv from './utils/validateEnv';
+import PostsController from './posts/posts.controller';
 import AuthenticationController from './authentication/authentication.controller';
-import UsersController from './users/users.controller';
-import ReportController from './report/report.controller';
+import CategoryController from './category/category.controller';
 
 validateEnv();
 
-const app = new App(
-  [
-    new AuthenticationController(),
-    new UsersController(),
-    new PostsController(),
-    new ReportController()
-  ]
-);
-
-app.listen();
+(async () => {
+  try {
+    await createConnection(config);
+  } catch (error) {
+    console.log('Error while connecting to the database', error);
+    return error;
+  }
+  const app = new App(
+    [
+      new PostsController(),
+      new AuthenticationController(),
+      new CategoryController()
+    ]
+  );
+  app.listen();
+})();
