@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node ./src/server.ts"
+    "dev": "ts-node ./src/server.ts",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "typeorm": "ts-node ./node_modules/typeorm/cli -f src/ormconfig.ts",
+    "typeorm:run": "npm run typeorm -- migration:run",
+    "typeorm:revert": "npm run typeorm -- migration:revert",
+    "typeorm:generate": "npm run typeorm -- migration:generate -n",
+    "typeorm:create": "npm run typeorm -- migration:create -n"
   },
   "keywords": [],
   "author": "",

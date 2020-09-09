@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "removeComments": true,
+    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "target": "es2017",
-    "outDir": "./dist",
     "baseUrl": "./src"
   },
   "include": [

@@ -7,7 +7,7 @@ import errorMiddleware from './middleware/error.middleware';
 class App {
   public app: express.Application;
 
-  constructor(controllers) {
+  constructor(controllers: Controller[]) {
     this.app = express();
 
     this.initializeMiddlewares();

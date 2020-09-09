@@ -16,6 +16,9 @@ class User {
   @Column()
   public email: string;
 
+  // @Column({default: 'X'})
+  // public gender: string;
+
   @Column()
   public password: string;
 
