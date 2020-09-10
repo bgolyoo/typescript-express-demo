@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node ./src/server.ts",
     "lint": "tslint -p tsconfig.json -c tslint.json",
+    "test": "jest",
     "typeorm": "ts-node ./node_modules/typeorm/cli -f src/ormconfig.ts",
     "typeorm:run": "npm run typeorm -- migration:run",
     "typeorm:revert": "npm run typeorm -- migration:revert",
@@ -38,9 +39,14 @@
     "@types/cookie-parser": "^1.4.2",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.8",
+    "@types/jest": "^26.0.13",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/mongoose": "^5.7.36",
     "@types/pg": "^7.14.4",
-    "@types/reflect-metadata": "^0.1.0"
+    "@types/reflect-metadata": "^0.1.0",
+    "@types/supertest": "^2.0.10",
+    "jest": "^26.4.2",
+    "supertest": "^4.0.2",
+    "ts-jest": "^26.3.0"
   }
 }
