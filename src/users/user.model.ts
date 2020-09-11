@@ -12,7 +12,9 @@ const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   password: String,
-  address: addressSchema
+  address: addressSchema,
+  twoFactorAuthenticationCode: String,
+  isTwoFactorAuthenticationEnabled: Boolean
 });
 
 const userModel = mongoose.model<User & mongoose.Document>('User', userSchema);

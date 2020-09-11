@@ -4,6 +4,8 @@ interface User {
   lastName: string;
   email: string;
   password: string;
+  twoFactorAuthenticationCode?: string;
+  isTwoFactorAuthenticationEnabled?: boolean;
 }
 
 export default User;
